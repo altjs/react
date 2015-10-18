@@ -1,0 +1,26 @@
+{
+  "name": "alt-connect",
+  "version": "1.0.0",
+  "description": "Connect flux to react",
+  "main": "lib/connect.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:altjs/connect.git"
+  },
+  "keywords": [
+    "connect",
+    "stores",
+    "flux",
+    "react",
+    "alt"
+  ],
+  "author": "Josh Perez <josh@goatslacker.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/altjs/connect/issues"
+  },
+  "homepage": "https://github.com/altjs/connect"
+}

@@ -3,15 +3,23 @@ import ConnectBase from './ConnectBase'
 
 export { ConnectBase }
 
-export default (Component, config) => {
+export default (Component, config = {}) => {
   return class extends ConnectBase {
+    static contextTypes = Component.contextTypes || config.contextTypes || {}
+
     constructor(props, context) {
       super(props, context)
       this.setConnections(props, context, config)
     }
 
     render() {
-      return <Component {...this.getNextProps()} flux={this.flux} />
+      return (
+        <Component
+          flux={this.flux}
+          {...this.props}
+          {...this.getNextProps()}
+        />
+      )
     }
   }
 }

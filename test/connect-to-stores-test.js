@@ -29,7 +29,6 @@ export default {
     beforeEach() {
       global.document = jsdom('<!doctype html><html><body></body></html>')
       global.window = global.document.defaultView
-//      require('react/lib/ExecutionEnvironment').canUseDOM = true
 
       alt.recycle()
     },
@@ -44,20 +43,19 @@ export default {
         this.x = 1
       }, 'FooStore')
 
-      const getPropsFromStores = sinon.stub().returns(FooStore.getState())
+      const getProps = sinon.stub().returns(FooStore.getState())
 
       const Child = connectToStores(React.createClass({
-        statics: {
-          getStores(props) {
-            return [FooStore]
-          },
-
-          getPropsFromStores
-        },
         render() {
           return <span>{this.props.x + this.props.y}</span>
         }
-      }))
+      }), {
+        listenTo(props) {
+          return [FooStore]
+        },
+
+        getProps
+      })
 
       const Parent = React.createClass({
         getInitialState() {
@@ -75,38 +73,27 @@ export default {
         <Parent />
       )
 
-      assert(getPropsFromStores.callCount === 2, 'getPropsFromStores called twice')
+      assert(getProps.callCount === 2, 'getProps called twice')
 
       const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
       assert(span.innerHTML === '2', 'prop passed in is correct')
-    },
-
-    'missing the static getStores() method should throw'() {
-      const BadComponentOne = React.createClass({
-        render() {
-          return React.createElement('div', null, 'Bad')
-        }
-      })
-
-      assert.throws(() => connectToStores(BadComponentOne), 'expects the wrapped component to have a static getStores() method')
     },
 
     'element mounts and unmounts'() {
       const div = document.createElement('div')
 
       const LegacyComponent = connectToStores(React.createClass({
-        statics: {
-          getStores() {
-            return [testStore]
-          },
-          getPropsFromStores(props) {
-            return testStore.getState()
-          }
-        },
         render() {
           return React.createElement('div', null, `Foo${this.props.delim}${this.props.foo}`)
         }
-      }))
+      }), {
+        listenTo() {
+          return [testStore]
+        },
+        getProps(props) {
+          return testStore.getState()
+        }
+      })
 
       ReactDom.render(
         <LegacyComponent />
@@ -115,37 +102,21 @@ export default {
       ReactDom.unmountComponentAtNode(div)
     },
 
-    'missing the static getPropsFromStores() method should throw'() {
-      const BadComponentTwo = React.createClass({
-        statics: {
-          getStores() {
-            return [testStore]
-          }
-        },
-        render() {
-          return React.createElement('div', null, 'Bad')
-        }
-      })
-
-      assert.throws(() => connectToStores(BadComponentTwo), 'expects the wrapped component to have a static getPropsFromStores() method')
-    },
-
     'createClass() component can get props from stores'() {
       const LegacyComponent = React.createClass({
-        statics: {
-          getStores() {
-            return [testStore]
-          },
-          getPropsFromStores(props) {
-            return testStore.getState()
-          }
-        },
         render() {
           return React.createElement('div', null, `Foo${this.props.delim}${this.props.foo}`)
         }
       })
 
-      const WrappedComponent = connectToStores(LegacyComponent)
+      const WrappedComponent = connectToStores(LegacyComponent, {
+        listenTo() {
+          return [testStore]
+        },
+        getProps(props) {
+          return testStore.getState()
+        },
+      })
       const element = React.createElement(WrappedComponent, {delim: ': '})
       const output = ReactDomServer.renderToStaticMarkup(element)
       assert.include(output, 'Foo: Bar')
@@ -153,21 +124,20 @@ export default {
 
     'component statics can see context properties'() {
       const Child = connectToStores(React.createClass({
-        statics: {
-          getStores(props, context) {
-            return [context.store]
-          },
-          getPropsFromStores(props, context) {
-            return context.store.getState()
-          }
-        },
         contextTypes: {
           store: React.PropTypes.object
         },
         render() {
           return <span>Foo: {this.props.foo}</span>
         }
-      }))
+      }), {
+        listenTo(props, context) {
+          return [context.store]
+        },
+        getProps(props, context) {
+          return context.store.getState()
+        },
+      })
 
       const ContextComponent = React.createClass({
         getChildContext() {
@@ -177,7 +147,7 @@ export default {
           store: React.PropTypes.object
         },
         render() {
-          return <Child/>
+          return <Child />
         }
       })
       const element = React.createElement(ContextComponent)
@@ -187,20 +157,19 @@ export default {
 
     'component can get use stores from props'() {
       const LegacyComponent = React.createClass({
-        statics: {
-          getStores(props) {
-            return [props.store]
-          },
-          getPropsFromStores(props) {
-            return props.store.getState()
-          }
-        },
         render() {
           return React.createElement('div', null, `Foo${this.props.delim}${this.props.foo}`)
         }
       })
 
-      const WrappedComponent = connectToStores(LegacyComponent)
+      const WrappedComponent = connectToStores(LegacyComponent, {
+        listenTo(props) {
+          return [props.store]
+        },
+        getProps(props) {
+          return props.store.getState()
+        },
+      })
       const element = React.createElement(WrappedComponent, {delim: ': ', store: testStore})
       const output = ReactDomServer.renderToStaticMarkup(element)
       assert.include(output, 'Foo: Bar')
@@ -213,14 +182,14 @@ export default {
         }
       }
 
-      const WrappedComponent = connectToStores({
-        getStores() {
+      const WrappedComponent = connectToStores(ClassComponent1, {
+        listenTo() {
           return [testStore]
         },
-        getPropsFromStores(props) {
+        getProps(props) {
           return testStore.getState()
         }
-      }, ClassComponent1)
+      })
 
       const node = TestUtils.renderIntoDocument(
         <WrappedComponent />
@@ -240,17 +209,17 @@ export default {
           return <span foo={this.props.foo} />
         }
       }
-      const WrappedComponent = connectToStores({
-        getStores() {
+      const WrappedComponent = connectToStores(ClassComponent2, {
+        listenTo() {
           return [testStore]
         },
-        getPropsFromStores(props) {
+        getProps(props) {
           return testStore.getState()
         },
-        componentDidConnect() {
+        didMount() {
           componentDidConnect = true
         }
-      }, ClassComponent2)
+      })
       const node = TestUtils.renderIntoDocument(
         <WrappedComponent />
       )
@@ -260,17 +229,8 @@ export default {
     'Component receives all updates'(done) {
       let componentDidConnect = false
       class ClassComponent3 extends React.Component {
-        static getStores() {
-          return [testStore]
-        }
-        static getPropsFromStores(props) {
-          return testStore.getState()
-        }
-        static componentDidConnect() {
-          testActions.updateFoo('Baz')
-          componentDidConnect = true
-        }
         componentDidUpdate() {
+          componentDidConnect = true
           assert(this.props.foo === 'Baz')
           done()
         }
@@ -279,7 +239,17 @@ export default {
         }
       }
 
-      const WrappedComponent = connectToStores(ClassComponent3)
+      const WrappedComponent = connectToStores(ClassComponent3, {
+        listenTo() {
+          return [testStore]
+        },
+        getProps(props) {
+          return testStore.getState()
+        },
+        didMount() {
+          testActions.updateFoo('Baz')
+        },
+      })
 
       let node = TestUtils.renderIntoDocument(
         <WrappedComponent />

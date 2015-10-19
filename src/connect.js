@@ -5,6 +5,7 @@ export { ConnectBase }
 
 export default (Component, config = {}) => {
   return class extends ConnectBase {
+    static displayName = `Stateful${Component.displayName || Component.name}Container`
     static contextTypes = Component.contextTypes || config.contextTypes || {}
 
     constructor(props, context) {

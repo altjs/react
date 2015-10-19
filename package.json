@@ -4,7 +4,11 @@
   "description": "Connect flux to react",
   "main": "lib/connect.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run clean && npm run transpile",
+    "clean": "rimraf lib",
+    "pretest": "npm run clean && npm run transpile",
+    "test": "mocha -u exports -R nyan --require ./test/babel test",
+    "transpile": "babel src --out-dir lib --stage 0"
   },
   "repository": {
     "type": "git",
@@ -22,5 +26,18 @@
   "bugs": {
     "url": "https://github.com/altjs/connect/issues"
   },
-  "homepage": "https://github.com/altjs/connect"
+  "homepage": "https://github.com/altjs/connect",
+  "devDependencies": {
+    "alt": "0.17.4",
+    "babel": "5.8.23",
+    "babel-core": "5.8.25",
+    "chai": "3.3.0",
+    "jsdom": "7.0.1",
+    "mocha": "2.3.3",
+    "react": "0.14.0",
+    "react-addons-test-utils": "0.14.0",
+    "react-dom": "0.14.0",
+    "rimraf": "2.4.3",
+    "sinon": "1.17.1"
+  }
 }

@@ -5,8 +5,8 @@ export default class Connect extends React.Component {
     flux: PropTypes.object,
   }
 
-  setConnections(config = {}) {
-    this.flux = this.props.flux || this.context.flux
+  setConnections(props, context, config = {}) {
+    this.flux = props.flux || context.flux
     this.stores = this.flux ? this.flux.stores : {}
     this.config = typeof config === 'function'
       ? config(this.stores, this.flux)

@@ -1,8 +1,6 @@
 import React from 'react'
 import ConnectBase from './ConnectBase'
 
-export { ConnectBase }
-
 export default (Component, config = {}) => {
   return class extends ConnectBase {
     static displayName = `Stateful${Component.displayName || Component.name}Container`

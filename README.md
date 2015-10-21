@@ -1,4 +1,4 @@
-# connect
+# alt-react
 
 * Connect your react component to your flux store.
 * Automatically pass the flux instance to your component.
@@ -8,7 +8,7 @@
 Example
 
 ```js
-import connect from 'alt-connect'
+import { connect } from 'alt-react'
 import React from 'react'
 import UserStore from '../stores/UserStore'
 
@@ -29,4 +29,12 @@ connect(MyComponent, {
     }
   },
 })
+```
+
+and providing the flux context at your root component
+
+```js
+import { supplyFluxContext } from 'alt-react'
+
+export default supplyFluxContext(alt)(Root)
 ```
